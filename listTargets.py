@@ -41,7 +41,7 @@ def query_mag(name):
     #fout.close()
 
 cadence_min = 0
-
+r=0
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-e2ab6d0240c1.json', scope)
@@ -88,6 +88,7 @@ for name in names:
     print("start " +name)
     query_mag(name)
     print("finish" +name)
+    band = ''
 
     #Fix the file from ziggy and make it into a csv 
     txt_file = (name+"tmp")
@@ -148,6 +149,7 @@ for name in names:
         print(row)
         if row[2] == "V":
             ct = True
+            band = 'V'
             break
         index=index+1
     skip = False
@@ -158,6 +160,7 @@ for name in names:
         for row in phots[lastswope-6:lastswope]:
             if row[2] == "r":
                 ct = True
+                band = 'r'
                 break
             index=index+1
     
@@ -168,6 +171,7 @@ for name in names:
                 break
             if row[2] == "g":
                 ct = True
+                band = 'g'
                 break
             index=index+1
     if not ct:
@@ -192,13 +196,22 @@ for name in names:
     linesTargets = list(readTargets)
     linesTargets[0][4] = "Recent obs date"
     linesTargets[0][5] = "Recent V_r_g mag"
+    
+    if r==0:
+        linesTargets[0].append("Band")
+        r=1
+
     linesTargets[row][4] = dateOfMagUT
     linesTargets[row][5] = mag
+    
     if name=='2018bcb' or name=='2018dyb' or name=='2018fyk' or name=='2018hyz' or name=='2018ido' or name=='2018lna' or name=='2018jbv':
         linesTargets[row][5] = 21
+        band = 'V'
     if name=='2005ip' or name=='2009ip' or name=='2010da' or name=='2013L':
         linesTargets[row][4] = '06/07/2019'
         linesTargets[row][5] = 10
+        band = 'V'
+    linesTargets[row].append(band)
     
 
     writeTargets = csv.writer(open(time.strftime('%Y%m%d') + '_Targets.csv', 'w'))
