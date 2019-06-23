@@ -125,21 +125,40 @@ class Swope(Telescope):
         #     s_to_n = 30
         # elif days_from_disc > 10 and days_from_disc <= 60:
         #     s_to_n = 20
-        
-        g_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.g_band])
+        onlyRed = False
+        if sn.name=='2005ip' or sn.name=='2009ip' or sn.name=='2010da' or sn.name=='2013L':
+            onlyRed=True
+        skipV = False
+        if sn.name=='2018bcb' or sn.name=='2018dyb' or sn.name=='2018fyk' or sn.name=='2018hyz' or sn.name=='2018ido' or sn.name=='2018lna' or sn.name=='2018jbv':
+            skipV=True
+        g_exp=0
+        i_exp=0
+        V_exp=0
+        u_exp=0
+        B_exp=0
+        r_exp=0
         r_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.r_band])
-        i_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.i_band])
-        V_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.V_band])
+        if not onlyRed:
+            g_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.g_band])
+            i_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.i_band])
+            if not skipV: V_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.V_band])
+            u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
+            if not skipV: B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
         # Specific to Swope -- make Vgri the same length exposure...
         mean_exp = self.round_to_num(Constants.round_to, np.mean([V_exp,g_exp,r_exp,i_exp]))
-
-        exposures.update({Constants.g_band: mean_exp})
-        exposures.update({Constants.r_band: mean_exp})
-        exposures.update({Constants.i_band: mean_exp})
         
-
-        u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
-        B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
+        if r_exp !=0:
+            exposures.update({Constants.r_band: mean_exp})
+        if g_exp != 0:
+            exposures.update({Constants.g_band: mean_exp})
+        if i_exp != 0:
+            exposures.update({Constants.i_band: mean_exp})
+        if B_exp != 0:
+            exposures.update({Constants.B_band: B_exp})
+        if V_exp != 0:
+            exposures.update({Constants.V_band: mean_exp})
+        if u_exp !=0 and mean_exp<=300:
+            exposures.update({Constants.u_band: mean_exp})
 
         # print (B_exp)
 
@@ -148,23 +167,24 @@ class Swope(Telescope):
         # exposures.update({Constants.u_band: u_exp})
         # Only include these exposures if time to S/N is <= 600s
         # if (B_exp <= 600):
-
+        if onlyRed:
+            exposures.update({Constants.r_band: 900})
         if (mean_exp <= 540):
             print("Target Name: %s; u_exp: %s, mean_exp: %s" % (sn.name, u_exp, mean_exp))
-            exposures.update({Constants.B_band: B_exp})
-            exposures.update({Constants.V_band: mean_exp})
-
-        if (mean_exp <= 300):
-            exposures.update({Constants.u_band: u_exp})
-
+            if not onlyRed:
+                if (not skipV) or sn.name == "2019com": exposures.update({Constants.V_band: mean_exp})
             # if (u_exp <= 600):
-                
-
         # Finally, don't go less than 45s (~ readout time), don't go more than 600s on Swope
+        if skipV or sn.name == "2019com": 
+            exposures.update({Constants.g_band: 600})
+            exposures.update({Constants.r_band: 600})
+            exposures.update({Constants.i_band: 600})
+            exposures.update({Constants.u_band: 600})
+
         for key, value in exposures.items():
             if exposures[key] < 45:
                 exposures[key] = 45
-            elif exposures[key] > 600:
+            elif exposures[key] > 600 and not (sn.name=='2005ip' or sn.name=='2009ip' or sn.name=='2010da' or sn.name=='2013L'):
                 exposures[key] = 600
             
         sn.exposures = exposures
@@ -319,13 +339,14 @@ class Swope(Telescope):
                     output_rows.append(self.swope_filter_row(Constants.g_band, specialExposure))  #comment out for GW
                 last_filter = Constants.g_band
                 
+                '''
                 if (Constants.u_band in t.exposures) and skipV:
                     if (not onlyR):
                         specialExposure = t.exposures[Constants.u_band]
                         if skipV or t.name=='2019com':
                             specialExposure=600
                         output_rows.append(self.swope_filter_row(Constants.u_band, specialExposure))                    
-
+                '''
 
                 if len(t.exposures) > 3:
                     if Constants.u_band in t.exposures:
@@ -340,10 +361,10 @@ class Swope(Telescope):
                         if (not skipV):
                             output_rows.append(self.swope_filter_row(Constants.V_band, t.exposures[Constants.V_band]))
                         
-                        specialExposure = t.exposures[Constants.B_band]
-                        if skipV or t.name=='2019com':
-                            specialExposure=600
-                        output_rows.append(self.swope_filter_row(Constants.B_band, t.exposures[Constants.B_band]))
+                            specialExposure = t.exposures[Constants.B_band]
+                            if skipV or t.name=='2019com':
+                                specialExposure=600
+                            output_rows.append(self.swope_filter_row(Constants.B_band, t.exposures[Constants.B_band]))
                     last_filter = Constants.B_band
             
                 '''

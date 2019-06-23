@@ -1,5 +1,5 @@
 import Constants
-import Telescope
+import newTelescope
 from Utilities import UTC_Offset
 
 import ephem
