@@ -142,10 +142,18 @@ class Swope(Telescope):
             g_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.g_band])
             i_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.i_band])
             if not skipV: V_exp = self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.V_band])
-            u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
-            if not skipV: B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
+            
         # Specific to Swope -- make Vgri the same length exposure...
-        mean_exp = self.round_to_num(Constants.round_to, np.mean([V_exp,g_exp,r_exp,i_exp]))
+        listt=[]
+        if r_exp !=0:
+            listt.append(r_exp)
+        if g_exp !=0:
+            listt.append(g_exp)
+        if i_exp !=0:
+            listt.append(i_exp)
+        if V_exp !=0:
+            listt.append(V_exp)
+        mean_exp = self.round_to_num(Constants.round_to, np.mean(listt))
         
         if r_exp !=0:
             exposures.update({Constants.r_band: mean_exp})
@@ -153,12 +161,16 @@ class Swope(Telescope):
             exposures.update({Constants.g_band: mean_exp})
         if i_exp != 0:
             exposures.update({Constants.i_band: mean_exp})
+        
+        u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
+        if not skipV: B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
+
         if B_exp != 0:
             exposures.update({Constants.B_band: B_exp})
         if V_exp != 0:
             exposures.update({Constants.V_band: mean_exp})
         if u_exp !=0 and mean_exp<=300:
-            exposures.update({Constants.u_band: mean_exp})
+            exposures.update({Constants.u_band: u_exp})
 
         # print (B_exp)
 
@@ -179,7 +191,7 @@ class Swope(Telescope):
             exposures.update({Constants.g_band: 600})
             exposures.update({Constants.r_band: 600})
             exposures.update({Constants.i_band: 600})
-            exposures.update({Constants.u_band: 600})
+            if (mean_exp<=300): exposures.update({Constants.u_band: 600})
 
         for key, value in exposures.items():
             if exposures[key] < 45:
