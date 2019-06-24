@@ -165,9 +165,9 @@ class Swope(Telescope):
         u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
         if not skipV: B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
 
-        if B_exp != 0:
+        if B_exp != 0 and mean_exp<=300 and (not skipV):
             exposures.update({Constants.B_band: B_exp})
-        if V_exp != 0:
+        if V_exp != 0 and mean_exp<=300 and (not skipV):
             exposures.update({Constants.V_band: mean_exp})
         if u_exp !=0 and mean_exp<=300:
             exposures.update({Constants.u_band: u_exp})
@@ -191,7 +191,7 @@ class Swope(Telescope):
             exposures.update({Constants.g_band: 600})
             exposures.update({Constants.r_band: 600})
             exposures.update({Constants.i_band: 600})
-            if (mean_exp<=300): exposures.update({Constants.u_band: 600})
+            if (mean_exp<=300) or (skipV): exposures.update({Constants.u_band: 600})
 
         for key, value in exposures.items():
             if exposures[key] < 45:
@@ -345,6 +345,7 @@ class Swope(Telescope):
                     if skipV or t.name=='2019com':
                         specialExposure=600
                     output_rows.append(self.swope_filter_row(Constants.i_band, specialExposure))
+                    
                     specialExposure = t.exposures[Constants.g_band]
                     if skipV or t.name=='2019com':
                         specialExposure=600
@@ -369,14 +370,9 @@ class Swope(Telescope):
                             output_rows.append(self.swope_filter_row(Constants.u_band, specialExposure))
 
                     # output_rows.append(self.swope_filter_row(Constants.u_band, t.exposures[Constants.u_band]))
-                    if (not onlyR): 
-                        if (not skipV):
-                            output_rows.append(self.swope_filter_row(Constants.V_band, t.exposures[Constants.V_band]))
-                        
-                            specialExposure = t.exposures[Constants.B_band]
-                            if skipV or t.name=='2019com':
-                                specialExposure=600
-                            output_rows.append(self.swope_filter_row(Constants.B_band, t.exposures[Constants.B_band]))
+                    if (not onlyR) and (not skipV) and (t.exposures[Constants.g_band] <= 300): 
+                        output_rows.append(self.swope_filter_row(Constants.V_band, t.exposures[Constants.V_band]))
+                        output_rows.append(self.swope_filter_row(Constants.B_band, t.exposures[Constants.B_band]))
                     last_filter = Constants.B_band
             
                 '''
