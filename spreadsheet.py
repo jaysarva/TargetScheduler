@@ -9,31 +9,46 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-
 
 gc = gspread.authorize(credentials)
 
-wks = gc.open('Swope SN Observing June 2019').sheet1
+sh = gc.open('Swope SN Observing June 2019')
 print('connected')
 names=[]
 
-with open('oldTargets.csv', 'rt') as f:
-    reader = csv.reader(f)
-    #lines = list(reader)
-    for row in csv.reader(f, delimiter=','):
-        if row[0] == '':
-            continue;
-        if row[0] =='\ufeff':
-        	continue
-        names.append(row[0])
-print(names)
-for name in names:
-	cols = wks.col_values(3)
-	r = -1
-	for i,c in enumerate(cols):
-		if c == name:
-			print("Found it.")
-			r = i+1
-	print(r)
-	rows = wks.row_values(r)
-	print(r)
-	print((rows))
-	wks.update_cell(r, len(rows)+1, time.strftime('%Y%m%d'))
+night = sh.get_worksheet(14) ##12 for 20190623
+list_of_lists = night.get_all_values()
+cell = (night.find("focus"))
+start = cell.row+2
 
+nameRows=[]
+for i,r in enumerate(list_of_lists[start:]):
+	if r[1] != '':
+		nameRow = i + 22
+		nameRows.append(nameRow)
+listofnames=[]
+for i,rownum in enumerate(nameRows):
+	if list_of_lists[rownum-2][8]!='':
+		added=0
+		while list_of_lists[rownum-2][9]=='':
+			rownum+=1
+			added+=1
+		print(rownum)
+		if rownum<nameRows[i+1]: #### BE CAREFUL HERE. MIGHT BE BUGGY. 
+			listofnames.append(list_of_lists[rownum-2-added][1])
 
+print(listofnames)
+
+sheet = sh.get_worksheet(0)
+
+for name in listofnames:
+	try:
+		cell = sheet.find(name)
+		print("Found " + name)
+	except:
+		print("Did not find "+ name)
+		continue;
+	fullrow = sheet.row_values(cell.row)
+	fullrow.append(time.strftime('%Y%m%d'))
+	sheet.insert_row(fullrow,cell.row+1)
+	sheet.delete_row(cell.row)
+	
+
+	#night.update_cell(cell.row, cell.col, time.strftime('%Y%m%d')) #Make this do yesterday's date, not today!
