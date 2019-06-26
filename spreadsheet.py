@@ -2,6 +2,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import time
 import csv
+from datetime import datetime, timedelta
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
@@ -10,10 +11,10 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-
 gc = gspread.authorize(credentials)
 
 sh = gc.open('Swope SN Observing June 2019')
-print('connected')
 names=[]
 
-night = sh.get_worksheet(14) ##12 for 20190623
+night = sh.worksheet((datetime.now() - timedelta(1)).strftime('%Y%m%d')) ##12 for 20190623
+print('connected')
 list_of_lists = night.get_all_values()
 cell = (night.find("focus"))
 start = cell.row+2
@@ -31,13 +32,13 @@ for i,rownum in enumerate(nameRows):
 			rownum+=1
 			added+=1
 		print(rownum)
-		if rownum<nameRows[i+1]: #### BE CAREFUL HERE. MIGHT BE BUGGY. 
+		if rownum<nameRows[i+1]: #### BE CAREFUL HERE. 
 			listofnames.append(list_of_lists[rownum-2-added][1])
 
 print(listofnames)
 
 sheet = sh.get_worksheet(0)
-
+print("connected 2")
 for name in listofnames:
 	try:
 		cell = sheet.find(name)
@@ -46,9 +47,6 @@ for name in listofnames:
 		print("Did not find "+ name)
 		continue;
 	fullrow = sheet.row_values(cell.row)
-	fullrow.append(time.strftime('%Y%m%d'))
+	fullrow.append((datetime.now() - timedelta(1)).strftime('%Y%m%d'))
 	sheet.insert_row(fullrow,cell.row+1)
 	sheet.delete_row(cell.row)
-	
-
-	#night.update_cell(cell.row, cell.col, time.strftime('%Y%m%d')) #Make this do yesterday's date, not today!
