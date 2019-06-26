@@ -40,7 +40,7 @@ def query_mag(name):
     print(rr._content.decode('utf-8'),file=fout)
     #fout.close()
 
-cadence_min = 0
+cadence_min = -1
 r=0
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -143,10 +143,9 @@ for name in names:
     if name=='2018bcb' or name=='2018dyb' or name=='2018fyk' or name=='2018hyz' or name=='2018ido' or name=='2018lna' or name=='2018jbv':
         skip = True
 
-    for row in phots[lastswope-5:lastswope]:
+    for row in phots[lastswope-6:lastswope]:
         if skip:
             break
-        print(row)
         if row[2] == "V":
             ct = True
             band = 'V'
@@ -210,7 +209,7 @@ for name in names:
     if name=='2005ip' or name=='2009ip' or name=='2010da' or name=='2013L':
         linesTargets[row][4] = '06/07/2019'
         linesTargets[row][5] = 10
-        band = 'V'
+        band = 'r'
     linesTargets[row].append(band)
     
 
