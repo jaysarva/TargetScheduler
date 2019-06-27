@@ -164,8 +164,9 @@ def getTargetSet(names, priority,r):
             linesTargets[row][4] = '06/07/2019'
             linesTargets[row][5] = 10
             band = 'r'
-        if linesTargets[row][3] == 1:
-            linesTargets[row][3] = priority
+        print(linesTargets[row])
+        if linesTargets[row][3] == '1':
+            linesTargets[row][3] = str(priority)
         linesTargets[row].append(band)
         
 
