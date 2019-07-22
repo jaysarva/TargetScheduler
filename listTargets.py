@@ -19,6 +19,9 @@ from PyAstronomy import pyasl
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+cadence_min=0
+cadence_min2=-60
+
 def find_index(input, file, i): 
     o = open(file, 'r') 
     myData = csv.reader(o) 
@@ -100,7 +103,21 @@ def getTargetSet(names, priority,r):
         if name=='2018bcb' or name=='2018dyb' or name=='2018fyk' or name=='2018hyz' or name=='2018ido' or name=='2018lna' or name=='2018jbv':
             skip = True
 
-        for row in phots[lastswope-6:lastswope]:
+        dates=[]
+        indexo = []
+        for i,row in enumerate(phots[lastswope-6:lastswope]):
+            dates.append(row[1])
+            indexo.append(i)
+        latest = (dates[len(dates)-1])
+        recdates=[]
+        for i,num in enumerate(dates):
+            if float(num)+1<float(latest):
+                continue
+            else:
+                recdates.append(indexo[i])
+        print(recdates)
+        index = lastswope-6+int(recdates[0])-1
+        for row in phots[lastswope-6+int(recdates[0]):lastswope]:
             if skip:
                 break
             if row[2] == "V":
@@ -112,17 +129,18 @@ def getTargetSet(names, priority,r):
         if name=='2005ip' or name=='2009ip' or name=='2010da' or name=='2013L':
             skip = True
         if not ct:
-            index = lastswope-6
-            for row in phots[lastswope-6:lastswope]:
+            index = lastswope-6+int(recdates[0])-1
+            for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
                 if row[2] == "r":
                     ct = True
                     band = 'r'
                     break
                 index=index+1
+                print(index)
         
         if not ct:
-            index = lastswope-6
-            for row in phots[lastswope-6:lastswope]:
+            index = lastswope-6+int(recdates[0])-1
+            for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
                 if skip:
                     break
                 if row[2] == "g":
@@ -179,16 +197,12 @@ def getTargetSet(names, priority,r):
 
         r=1
 
-
-
-cadence_min = -1
-cadence_min2 = -70
 r=0
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-e2ab6d0240c1.json', scope)
 gc = gspread.authorize(credentials)
-wks = gc.open('Swope SN Observing June 2019').sheet1
+wks = gc.open('Swope SN Observing July 2019').sheet1
 print("connected")
 
 indices = []
