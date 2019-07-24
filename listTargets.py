@@ -19,7 +19,7 @@ from PyAstronomy import pyasl
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-cadence_min=0
+cadence_min=-1
 cadence_min2=-60
 
 def find_index(input, file, i): 
@@ -83,17 +83,24 @@ def getTargetSet(names, priority,r):
         ct = False
         inc=True
         r1=find_index("Swope",name+'ziggy.csv',7)
-        startRow=r1
-        lastswope = startRow+1;
-        for row in phots[startRow+1:]:
-            try:
-                if row[7] == "Swope": 
-                    ct = True  
-                if (ct and row[7] != "Swope"):
+        new = False
+        if not (isinstance(r1, int)):
+            new = True
+        else:
+            startRow=r1
+            lastswope = startRow+1;
+        if not new:
+            for row in phots[startRow+1:]:
+                try:
+                    if row[7] == "Swope": 
+                        ct = True  
+                    if (ct and row[7] != "Swope"):
+                        break
+                    lastswope=lastswope+1 
+                except:
                     break
-                lastswope=lastswope+1 
-            except:
-                break
+        else:
+            lastswope = len(phots) - 2
         if inc==False:
             continue
         ct = False
@@ -105,55 +112,62 @@ def getTargetSet(names, priority,r):
 
         dates=[]
         indexo = []
-        for i,row in enumerate(phots[lastswope-6:lastswope]):
-            dates.append(row[1])
-            indexo.append(i)
-        latest = (dates[len(dates)-1])
-        recdates=[]
-        for i,num in enumerate(dates):
-            if float(num)+1<float(latest):
-                continue
-            else:
-                recdates.append(indexo[i])
-        print(recdates)
-        index = lastswope-6+int(recdates[0])-1
-        for row in phots[lastswope-6+int(recdates[0]):lastswope]:
-            if skip:
-                break
-            if row[2] == "V":
-                ct = True
-                band = 'V'
-                break
-            index=index+1
-        skip = False
-        if name=='2005ip' or name=='2009ip' or name=='2010da' or name=='2013L':
-            skip = True
-        if not ct:
+        if not new: 
+            for i,row in enumerate(phots[lastswope-6:lastswope]):
+                dates.append(row[1])
+                indexo.append(i)
+            latest = (dates[len(dates)-1])
+            recdates=[]
+            for i,num in enumerate(dates):
+                if float(num)+1<float(latest):
+                    continue
+                else:
+                    recdates.append(indexo[i])
+            print(recdates)
             index = lastswope-6+int(recdates[0])-1
-            for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
-                if row[2] == "r":
-                    ct = True
-                    band = 'r'
-                    break
-                index=index+1
-                print(index)
-        
-        if not ct:
-            index = lastswope-6+int(recdates[0])-1
-            for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
+            for row in phots[lastswope-6+int(recdates[0]):lastswope]:
                 if skip:
                     break
-                if row[2] == "g":
+                if row[2] == "V":
                     ct = True
-                    band = 'g'
+                    band = 'V'
                     break
                 index=index+1
-        if not ct:
-            print("No valid band found. Check ziggy phot file. ")
-
+            skip = False
+            if name=='2005ip' or name=='2009ip' or name=='2010da' or name=='2013L':
+                skip = True
+            if not ct:
+                index = lastswope-6+int(recdates[0])-1
+                for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
+                    if row[2] == "r":
+                        ct = True
+                        band = 'r'
+                        break
+                    index=index+1
+                    print(index)
+            
+            if not ct:
+                index = lastswope-6+int(recdates[0])-1
+                for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
+                    if skip:
+                        break
+                    if row[2] == "g":
+                        ct = True
+                        band = 'g'
+                        break
+                    index=index+1
+            if not ct:
+                print("No valid band found. Check ziggy phot file. ")
+        else:
+            index = lastswope-1
+            print(index)
         #Find mag and date of magnitude
         dateOfMagMJD = float(phots[index][1])
         mag = float(phots[index][5])
+
+        #f = A * exp(-(t-t0)/tfall)/(1+exp(-(t-t0)/trise)) + B
+
+
         print(mag)
         pong = Time(dateOfMagMJD, format = 'mjd')
         pong.format = 'decimalyear'
@@ -185,6 +199,8 @@ def getTargetSet(names, priority,r):
         print(linesTargets[row])
         if linesTargets[row][3] == '1':
             linesTargets[row][3] = str(priority)
+        if new:
+            band = phots[index][2]
         linesTargets[row].append(band)
         
 
