@@ -165,11 +165,11 @@ class Swope(Telescope):
         u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
         if not skipV: B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
 
-        if B_exp != 0 and mean_exp<=300 and (not skipV):
+        if (B_exp != 0 and mean_exp<=300 and (not skipV)) or sn.name =='2019com':
             exposures.update({Constants.B_band: B_exp})
-        if V_exp != 0 and mean_exp<=300 and (not skipV):
+        if (V_exp != 0 and mean_exp<=300 and (not skipV)) or sn.name =='2019com':
             exposures.update({Constants.V_band: mean_exp})
-        if u_exp !=0 and mean_exp<=300:
+        if (u_exp !=0 and mean_exp<=300) or sn.name =='2019com':
             exposures.update({Constants.u_band: u_exp})
 
         # print (B_exp)
@@ -191,7 +191,7 @@ class Swope(Telescope):
             exposures.update({Constants.g_band: 600})
             exposures.update({Constants.r_band: 600})
             exposures.update({Constants.i_band: 600})
-            if (mean_exp<=300) or (skipV): exposures.update({Constants.u_band: 600})
+            if (mean_exp<=300) or (skipV or sn.name == "2019com"): exposures.update({Constants.u_band: 600})
 
         for key, value in exposures.items():
             if exposures[key] < 45:

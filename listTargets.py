@@ -125,7 +125,7 @@ def getTargetSet(names, priority,r):
                     recdates.append(indexo[i])
             print(recdates)
             index = lastswope-6+int(recdates[0])-1
-            for row in phots[lastswope-6+int(recdates[0]):lastswope]:
+            for row in phots[lastswope-6+int(recdates[0]-1):lastswope]:
                 if skip:
                     break
                 if row[2] == "V":
@@ -157,11 +157,22 @@ def getTargetSet(names, priority,r):
                         break
                     index=index+1
             if not ct:
+                index = lastswope-6+int(recdates[0])-1
+                for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
+                    if skip:
+                        break
+                    if row[2] == "i":
+                        ct = True
+                        band = 'i'
+                        break
+                    index=index+1
+            if not ct:
                 print("No valid band found. Check ziggy phot file. ")
         else:
             index = lastswope-1
             print(index)
         #Find mag and date of magnitude
+        print(index)
         dateOfMagMJD = float(phots[index][1])
         mag = float(phots[index][5])
 
