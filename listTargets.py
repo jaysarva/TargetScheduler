@@ -58,11 +58,11 @@ def getTargetSet(names, priority,r):
             old = in_text.read() # read everything in the file
             old = old.replace('      ', ',')
             old = old.replace('  ', ',')
-        with open(txt_file,'w') as in_text:
+        with open(txt_file,'w') as in_text: 
             in_text.truncate(0)
-            in_text.write(old)
+            in_text.write(old) 
 
-
+        #Converting to a csv
         with open(name+'tmp', 'r') as f:
             content = f.readlines()
             with open(name+'ziggy.csv', 'w+',  newline = '') as csvFile:
@@ -92,7 +92,7 @@ def getTargetSet(names, priority,r):
         if not new:
             for row in phots[startRow+1:]:
                 try:
-                    if row[7] == "Swope": 
+                    if row[7] == "Swope": #Finding the Swope photometry from the ysepz files
                         ct = True  
                     if (ct and row[7] != "Swope"):
                         break
@@ -107,8 +107,9 @@ def getTargetSet(names, priority,r):
         index = lastswope-6
 
         skip = False
+        #These are the list of supernovae that we want to not use the V band. 
         if name=='2018bcb' or name=='2018dyb' or name=='2018fyk' or name=='2018hyz' or name=='2018ido' or name=='2018lna' or name=='2018jbv':
-            skip = True
+            skip = True 
 
         dates=[]
         indexo = []
@@ -134,6 +135,7 @@ def getTargetSet(names, priority,r):
                     break
                 index=index+1
             skip = False
+            #These are the list of supernovae that we want to actually specifically use r band
             if name=='2005ip' or name=='2009ip' or name=='2010da' or name=='2013L':
                 skip = True
             if not ct:
@@ -180,6 +182,7 @@ def getTargetSet(names, priority,r):
 
 
         print(mag)
+        #Finding and converting date
         pong = Time(dateOfMagMJD, format = 'mjd')
         pong.format = 'decimalyear'
         dateOfMagUT = pyasl.decimalYearGregorianDate(pong.value, form='yyyy-mm-dd')
@@ -188,6 +191,7 @@ def getTargetSet(names, priority,r):
 
         row = find_index(name, time.strftime('%Y%m%d') + '_Targets.csv',0)
 
+        #Printing everything back into the targets.csv file. 
         readTargets = csv.reader(open(time.strftime('%Y%m%d') + '_Targets.csv'))
         linesTargets = list(readTargets)
         linesTargets[0][4] = "Recent obs date"
@@ -225,7 +229,7 @@ def getTargetSet(names, priority,r):
         r=1
 
 r=0
-
+#Find supernovaes to query for with the spreadsheet!
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-e2ab6d0240c1.json', scope)
 gc = gspread.authorize(credentials)
@@ -269,7 +273,7 @@ with open(time.strftime('%Y%m%d') + "_Targets.csv") as csv_file:
         names.append(row[0])
 print(names)
 
-getTargetSet(names, 1,0)
+getTargetSet(names, 1,0) #First priority targets!
 
 print('Done with first pass. Moving on to less important targets.')
 
@@ -298,7 +302,7 @@ for i in indices2:
 del writer
 print(names2)
 
-getTargetSet(names2,2,1)
+getTargetSet(names2,2,1) #second priority targets here
 
 
 print("Done! Check the targets.csv file. ")
