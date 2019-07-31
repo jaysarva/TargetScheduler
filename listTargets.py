@@ -12,12 +12,14 @@ from requests.auth import HTTPBasicAuth
 import time
 import openpyxl
 import math
-from datetime import datetime
+from datetime import datetime,timedelta
 import numpy as np
 from astropy.time import Time
 from PyAstronomy import pyasl
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from scipy import optimize
+import matplotlib.pyplot as plt
 
 cadence_min=-1
 cadence_min2=-60
@@ -42,6 +44,53 @@ def query_mag(name):
     fout = open(name+'tmp','w')
     print(rr._content.decode('utf-8'),file=fout)
     #fout.close()
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
+def estimateMag(name, date,band):
+    query_mag(name)
+    with open(name+'tmp', 'r') as f:
+        content = f.readlines()
+        with open(name+'ziggy.csv', 'w+',  newline = '') as csvFile:
+            csvWriter = csv.writer(csvFile, delimiter = ' ')
+            ct = False
+            for elem in content:
+                if "VARLIST" in elem:
+                    ct = True
+                    r = True
+                if not ct:
+                    continue
+                if r:
+                    elem = ' '.join(elem.split())
+                    elem = elem.replace(' ', ',')
+                    csvWriter.writerow([elem])
+                    r=False
+                    continue
+                if not ("Swope" in elem):
+                    continue
+                elem = ' '.join(elem.split())
+                elem = elem.replace(' ', ',')
+                csvWriter.writerow([elem])
+            del csvWriter
+    data = list(csv.reader(open(name+'ziggy.csv', 'r')))
+    data2=[]
+    for i,line in enumerate(data):
+        if line[2] == band:
+            data2.append(line)
+    data2 = np.array(data2)
+    x_data = column(data2,1)
+    y_data = column(data2,5)
+    x_data = [ float(x) for x in x_data ]
+    y_data = [ float(x) for x in y_data ]
+    params, params_covariance = optimize.curve_fit(bazin,x_data,y_data,bounds=((-np.inf, 58600, -np.inf,1,-20), (5000, 58700, 150,np.inf,20)))
+    print(params)
+    '''plt.scatter(x_data, y_data)
+    plt.plot(x_data, bazin(x_data, params[0], params[1], params[2], params[3],params[4]))
+    plt.gca().invert_yaxis()
+    plt.show()'''
+    mag = bazin(date, params[0],params[1],params[2],params[3],params[4])
+
 
 def getTargetSet(names, priority,r):
     for name in names:
@@ -189,10 +238,10 @@ def getTargetSet(names, priority,r):
         dateOfMagUT = datetime.strptime(dateOfMagUT, "%Y-%m-%d").strftime("%m/%d/%Y")
         print(dateOfMagUT)
 
-        row = find_index(name, time.strftime('%Y%m%d') + '_Targets.csv',0)
+        row = find_index(name, datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv',0)
 
         #Printing everything back into the targets.csv file. 
-        readTargets = csv.reader(open(time.strftime('%Y%m%d') + '_Targets.csv'))
+        readTargets = csv.reader(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv'))
         linesTargets = list(readTargets)
         linesTargets[0][4] = "Recent obs date"
         linesTargets[0][5] = "Recent V_r_g mag"
@@ -219,7 +268,7 @@ def getTargetSet(names, priority,r):
         linesTargets[row].append(band)
         
 
-        writeTargets = csv.writer(open(time.strftime('%Y%m%d') + '_Targets.csv', 'w'))
+        writeTargets = csv.writer(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', 'w'))
         writeTargets.writerows(linesTargets)
 
         del writeTargets
@@ -253,9 +302,9 @@ for i,c in enumerate(cadences[2:]):
         continue
 print(indices)
 
-writer = csv.writer(open(time.strftime('%Y%m%d') + '_Targets.csv', 'w')) # This should generate the new target list
+writer = csv.writer(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', 'w')) # This should generate the new target list
 
-with open(time.strftime('%Y%m%d') + '_Targets.csv', "w") as my_empty_csv:
+with open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', "w") as my_empty_csv:
   pass 
 
 writer.writerows([wks.row_values(1)[2:9]])
@@ -265,7 +314,7 @@ for i in indices:
 del writer
 
 names=[]
-with open(time.strftime('%Y%m%d') + "_Targets.csv") as csv_file:
+with open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + "_Targets.csv") as csv_file:
     for row in csv.reader(csv_file, delimiter=','):
         if row[0] == '':
             print("NOTICE THIS")
@@ -293,7 +342,7 @@ for i,c in enumerate(cadences[2:]):
 print(indices2)
 
 
-writer = csv.writer(open(time.strftime('%Y%m%d') + '_Targets.csv', 'a')) # This should generate the new target list
+writer = csv.writer(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', 'a')) # This should generate the new target list
 
 names2=[]
 for i in indices2:
