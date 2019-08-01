@@ -238,10 +238,10 @@ def getTargetSet(names, priority,r):
         dateOfMagUT = datetime.strptime(dateOfMagUT, "%Y-%m-%d").strftime("%m/%d/%Y")
         print(dateOfMagUT)
 
-        row = find_index(name, datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv',0)
+        row = find_index(name, datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv',0)
 
         #Printing everything back into the targets.csv file. 
-        readTargets = csv.reader(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv'))
+        readTargets = csv.reader(open(datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv'))
         linesTargets = list(readTargets)
         linesTargets[0][4] = "Recent obs date"
         linesTargets[0][5] = "Recent V_r_g mag"
@@ -268,7 +268,7 @@ def getTargetSet(names, priority,r):
         linesTargets[row].append(band)
         
 
-        writeTargets = csv.writer(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', 'w'))
+        writeTargets = csv.writer(open(datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv', 'w'))
         writeTargets.writerows(linesTargets)
 
         del writeTargets
@@ -302,9 +302,9 @@ for i,c in enumerate(cadences[2:]):
         continue
 print(indices)
 
-writer = csv.writer(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', 'w')) # This should generate the new target list
+writer = csv.writer(open(datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv', 'w')) # This should generate the new target list
 
-with open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', "w") as my_empty_csv:
+with open(datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv', "w") as my_empty_csv:
   pass 
 
 writer.writerows([wks.row_values(1)[2:9]])
@@ -314,7 +314,7 @@ for i in indices:
 del writer
 
 names=[]
-with open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + "_Targets.csv") as csv_file:
+with open(datetime.strftime(datetime.today(),'%Y%m%d') + "_Targets.csv") as csv_file:
     for row in csv.reader(csv_file, delimiter=','):
         if row[0] == '':
             print("NOTICE THIS")
@@ -342,7 +342,7 @@ for i,c in enumerate(cadences[2:]):
 print(indices2)
 
 
-writer = csv.writer(open(datetime.strftime(datetime.today()+timedelta(1),'%Y%m%d') + '_Targets.csv', 'a')) # This should generate the new target list
+writer = csv.writer(open(datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv', 'a')) # This should generate the new target list
 
 names2=[]
 for i in indices2:
