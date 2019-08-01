@@ -282,7 +282,7 @@ r=0
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-e2ab6d0240c1.json', scope)
 gc = gspread.authorize(credentials)
-wks = gc.open('Swope SN Observing July 2019').sheet1
+wks = gc.open('Swope SN Observing August 2019').sheet1
 print("connected")
 
 indices = []
