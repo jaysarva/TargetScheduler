@@ -165,11 +165,11 @@ class Swope(Telescope):
         u_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.u_band]))
         if not skipV: B_exp = self.round_to_num(Constants.round_to, self.time_to_S_N(s_to_n, adj_app_mag, self.filters[Constants.B_band]))
 
-        if (B_exp != 0 and mean_exp<=300 and (not skipV)) or sn.name =='2019com':
+        if (B_exp != 0 and mean_exp<=450 and (not skipV)):
             exposures.update({Constants.B_band: B_exp})
-        if (V_exp != 0 and mean_exp<=300 and (not skipV)) or sn.name =='2019com':
+        if (V_exp != 0 and mean_exp<=450 and (not skipV)):
             exposures.update({Constants.V_band: mean_exp})
-        if (u_exp !=0 and mean_exp<=300) or sn.name =='2019com':
+        if (u_exp !=0 and mean_exp<=450):
             exposures.update({Constants.u_band: u_exp})
 
         # print (B_exp)
@@ -184,14 +184,14 @@ class Swope(Telescope):
         if (mean_exp <= 540):
             print("Target Name: %s; u_exp: %s, mean_exp: %s" % (sn.name, u_exp, mean_exp))
             if not onlyRed:
-                if (not skipV) or sn.name == "2019com": exposures.update({Constants.V_band: mean_exp})
+                if (not skipV): exposures.update({Constants.V_band: mean_exp})
             # if (u_exp <= 600):
         # Finally, don't go less than 45s (~ readout time), don't go more than 600s on Swope
-        if skipV or sn.name == "2019com": 
+        if skipV: 
             exposures.update({Constants.g_band: 600})
             exposures.update({Constants.r_band: 600})
             exposures.update({Constants.i_band: 600})
-            if (mean_exp<=300) or (skipV or sn.name == "2019com"): exposures.update({Constants.u_band: 600})
+            if (mean_exp<=450) or (skipV): exposures.update({Constants.u_band: 600})
 
         for key, value in exposures.items():
             if exposures[key] < 45:
@@ -335,19 +335,19 @@ class Swope(Telescope):
 
                 # Start in riguVB order
                 specialExposure = t.exposures[Constants.r_band]
-                if skipV or t.name=='2019com':
+                if skipV:
                     specialExposure=600
                 if onlyR:
                     specialExposure=900
                 output_rows.append(self.swope_filter_row(Constants.r_band, specialExposure))  #comment out for GW
                 if (not onlyR):
                     specialExposure = t.exposures[Constants.i_band]
-                    if skipV or t.name=='2019com':
+                    if skipV:
                         specialExposure=600
                     output_rows.append(self.swope_filter_row(Constants.i_band, specialExposure))
                     
                     specialExposure = t.exposures[Constants.g_band]
-                    if skipV or t.name=='2019com':
+                    if skipV:
                         specialExposure=600
                     output_rows.append(self.swope_filter_row(Constants.g_band, specialExposure))  #comment out for GW
                 last_filter = Constants.g_band
@@ -365,12 +365,12 @@ class Swope(Telescope):
                     if Constants.u_band in t.exposures:
                         if (not onlyR):
                             specialExposure = t.exposures[Constants.u_band]
-                            if skipV or t.name=='2019com':
+                            if skipV:
                                 specialExposure=600
                             output_rows.append(self.swope_filter_row(Constants.u_band, specialExposure))
 
                     # output_rows.append(self.swope_filter_row(Constants.u_band, t.exposures[Constants.u_band]))
-                    if (not onlyR) and (not skipV) and (t.exposures[Constants.g_band] <= 300): 
+                    if (not onlyR) and (not skipV) and (t.exposures[Constants.g_band] <= 450): 
                         output_rows.append(self.swope_filter_row(Constants.V_band, t.exposures[Constants.V_band]))
                         output_rows.append(self.swope_filter_row(Constants.B_band, t.exposures[Constants.B_band]))
                     last_filter = Constants.B_band
