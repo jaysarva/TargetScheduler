@@ -195,7 +195,6 @@ def getTargetSet(names, priority,r):
                         band = 'r'
                         break
                     index=index+1
-                    print(index)
             
             if not ct:
                 index = lastswope-6+int(recdates[0])-1
@@ -218,12 +217,20 @@ def getTargetSet(names, priority,r):
                         break
                     index=index+1
             if not ct:
+                index = lastswope-6+int(recdates[0])-1
+                for row in phots[lastswope-6+int(recdates[0])-1:lastswope]:
+                    if skip:
+                        break
+                    if row[2] == "B":
+                        ct = True
+                        band = 'B'
+                        break
+                    index=index+1
+            if not ct:
                 print("No valid band found. Check ziggy phot file. ")
         else:
             index = lastswope-1
-            print(index)
         #Find mag and date of magnitude
-        print(index)
         dateOfMagMJD = float(phots[index][1])
         mag = float(phots[index][5])
 
@@ -260,13 +267,13 @@ def getTargetSet(names, priority,r):
             linesTargets[row][4] = '06/07/2019'
             linesTargets[row][5] = 10
             band = 'r'
-        print(linesTargets[row])
+        
         if linesTargets[row][3] == '1':
             linesTargets[row][3] = str(priority)
         if new:
             band = phots[index][2]
         linesTargets[row].append(band)
-        
+        print(linesTargets[row])
 
         writeTargets = csv.writer(open(datetime.strftime(datetime.today(),'%Y%m%d') + '_Targets.csv', 'w'))
         writeTargets.writerows(linesTargets)
