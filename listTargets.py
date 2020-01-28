@@ -107,6 +107,9 @@ def getTargetSet(names, priority,r):
 			old = in_text.read() # read everything in the file
 			old = old.replace('      ', ',')
 			old = old.replace('  ', ',')
+			old = old.replace('	', ',')
+			old = old.replace('\t', ',')
+			old = old.replace(',,', ',')
 		with open(txt_file,'w') as in_text: 
 			in_text.truncate(0)
 			in_text.write(old) 
@@ -304,7 +307,7 @@ r=0
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('Python Sheets B-e2ab6d0240c1.json', scope)
 gc = gspread.authorize(credentials)
-wks = gc.open('Swope SN Observing November 2019').sheet1
+wks = gc.open('Swope SN Observing January 2020').sheet1
 print("connected")
 
 indices = []
